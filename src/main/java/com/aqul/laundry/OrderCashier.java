@@ -627,23 +627,27 @@ public class OrderCashier extends javax.swing.JFrame {
         if (lanjut) {
             try {
                 Connection conn = Database.Connect();
-                Statement state = conn.createStatement();
-                String queryFindUser = "SELECT * FROM user WHERE phone_number = ('" + customerPhone + "');";
-                ResultSet result = state.executeQuery(queryFindUser);
+                String queryFindUser = "SELECT * FROM user WHERE phone_number = ?";
+                PreparedStatement findUserStatement = conn.prepareStatement(queryFindUser);
+                findUserStatement.setString(1, customerPhone);
+                ResultSet result = findUserStatement.executeQuery();
+
                 int userId = -1;
                 if (result.next()) {
                     userId = result.getInt("id");
                 } else {
-                    String queryInsertUser = "INSERT INTO user (nama, phone_number) VALUES ('" + customerName+"', '" + customerPhone + "');";
-                    int rowsInserted = state.executeUpdate(queryInsertUser, Statement.RETURN_GENERATED_KEYS);
-
+                    String queryInsertUser = "INSERT INTO user (nama, phone_number) VALUES (?, ?)";
+                    PreparedStatement insertUserStatement = conn.prepareStatement(queryInsertUser, Statement.RETURN_GENERATED_KEYS);
+                    insertUserStatement.setString(1, customerName);
+                    insertUserStatement.setString(2, customerPhone);
+                    int rowsInserted = insertUserStatement.executeUpdate();
+                    
                     if (rowsInserted > 0) {
-                        try (ResultSet resultInsert = state.getGeneratedKeys()) {
-                            if (resultInsert.next()) {
-                                userId = resultInsert.getInt(1);
-                            } else {
-                                throw new SQLException("Failed to retrieve user ID after insert");
-                            }
+                        ResultSet resultInsert = insertUserStatement.getGeneratedKeys();
+                        if (resultInsert.next()) {
+                            userId = resultInsert.getInt(1);
+                        } else {
+                            throw new SQLException("Failed to retrieve user ID after insert");
                         }
                     } else {
                         throw new SQLException("Failed to insert user");
@@ -702,9 +706,10 @@ public class OrderCashier extends javax.swing.JFrame {
         if (row != -1) {
             String id = (String) allOrderTable.getValueAt(row, 0);
             try {
-                Statement state = Database.Connect().createStatement();
-                String query = "DELETE FROM orders WHERE order_id = '" + id + "';";
-                int rowEffect = state.executeUpdate(query);
+                String query = "DELETE FROM orders WHERE order_id = ?";
+                PreparedStatement prepare = Database.Connect().prepareStatement(query);
+                prepare.setInt(1, Integer.parseInt(id));
+                int rowEffect = prepare.executeUpdate();
                 
                 if (rowEffect > 0) {
                     JOptionPane.showMessageDialog(this, "Order berhasil dihapus", "Success", JOptionPane.INFORMATION_MESSAGE);

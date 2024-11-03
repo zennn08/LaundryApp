@@ -1,9 +1,7 @@
 package com.aqul.laundry;
 
 import javax.swing.JOptionPane;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -257,9 +255,11 @@ public class Login extends javax.swing.JFrame {
         
         if (lanjut) {
             try {
-                Statement state = Database.Connect().createStatement();
-                String query = "SELECT * FROM admin WHERE username = ('" + username + "');";
-                ResultSet result = state.executeQuery(query);
+                Connection conn = Database.Connect();
+                String query = "SELECT * FROM admin WHERE username = ?";
+                PreparedStatement prepare = conn.prepareStatement(query);
+                prepare.setString(1, username);
+                ResultSet result = prepare.executeQuery();
 
                 // Jika username ada
                 if (result.next()) {

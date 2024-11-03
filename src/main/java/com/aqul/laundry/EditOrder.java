@@ -277,11 +277,10 @@ public class EditOrder extends javax.swing.JDialog {
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
         if (doneCheckBox.isSelected()) {
             try {
-                Statement state = Database.Connect().createStatement();
-                String query = "UPDATE orders SET status = 'Completed' WHERE order_id = " + idTextField.getText() + ";";
-                System.out.println(query);
-                int rowAffected = state.executeUpdate(query);
-                
+                String query = "UPDATE orders SET status = 'Completed' WHERE order_id = ?";
+                PreparedStatement preparedStatement = Database.Connect().prepareStatement(query);
+                preparedStatement.setString(1, idTextField.getText());
+                int rowAffected = preparedStatement.executeUpdate();
                 if (rowAffected > 0) {
                     if (sendWACheckBox.isSelected()) {
                         OkHttpClient client = new OkHttpClient().newBuilder().build();
