@@ -140,7 +140,7 @@ public class EditOrder extends javax.swing.JDialog {
 
         doneCheckBox.setText("Done");
 
-        sendWACheckBox.setText("Show notification to WhatsApp");
+        sendWACheckBox.setText("Send notification to WhatsApp");
         sendWACheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sendWACheckBoxActionPerformed(evt);
