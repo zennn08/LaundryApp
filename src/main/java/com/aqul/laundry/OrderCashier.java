@@ -98,7 +98,7 @@ public class OrderCashier extends javax.swing.JFrame {
         deleteOrderButton = new rojerusan.RSMaterialButtonRectangle();
         historyPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        allOrderTable1 = new javax.swing.JTable();
+        historyOrderTable = new javax.swing.JTable();
         updateOrderLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -436,7 +436,7 @@ public class OrderCashier extends javax.swing.JFrame {
 
         historyPanel.setBackground(new java.awt.Color(249, 250, 250));
 
-        allOrderTable1.setModel(new javax.swing.table.DefaultTableModel(
+        historyOrderTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -455,7 +455,7 @@ public class OrderCashier extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(allOrderTable1);
+        jScrollPane2.setViewportView(historyOrderTable);
 
         updateOrderLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         updateOrderLabel1.setText("History");
@@ -468,20 +468,20 @@ public class OrderCashier extends javax.swing.JFrame {
                 .addGap(20, 20, 20)
                 .addGroup(historyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(historyPanelLayout.createSequentialGroup()
-                        .addComponent(updateOrderLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 525, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(30, Short.MAX_VALUE))
                     .addGroup(historyPanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(155, Short.MAX_VALUE))))
+                        .addComponent(updateOrderLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         historyPanelLayout.setVerticalGroup(
             historyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(historyPanelLayout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addComponent(updateOrderLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(127, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(117, Short.MAX_VALUE))
         );
 
         mainPanel.add(historyPanel, "card3");
@@ -568,6 +568,7 @@ public class OrderCashier extends javax.swing.JFrame {
     private void historyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historyButtonActionPerformed
         changeMainPanel(historyPanel);
         this.setTitle("Laundry Application | History Order");
+        showAllHistoryOrder();
     }//GEN-LAST:event_historyButtonActionPerformed
 
     private void searchOrderTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchOrderTextFieldActionPerformed
@@ -788,6 +789,43 @@ public class OrderCashier extends javax.swing.JFrame {
         autoFitTableColumns(allOrderTable);
     }
     
+    public void showAllHistoryOrder() {
+        String[] coloumn = {"ID", "Tanggal", "Nama", "No. HP", "Status", "Layanan", "Berat", "Harga"};
+        DefaultTableModel table = new DefaultTableModel(null, coloumn){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        try {
+            String query = "SELECT * FROM orders JOIN user ON orders.user_id = user.id JOIN service ON orders.service_id = service.id;";
+            Connection conn = Database.Connect();
+            Statement state = conn.createStatement();
+            ResultSet result = state.executeQuery(query);
+            
+            while (result.next()) {
+                String id = result.getString("order_id");
+                String tanggal = result.getString("order_date");
+                String nama = result.getString("nama");
+                String noHp = result.getString("phone_number");
+                String status = result.getString("status");
+                String layanan = result.getString("name");
+                String berat = result.getString("amount");
+                String harga = "Rp. " + result.getInt("total_price");
+                
+                table.addRow(new String[] {id, tanggal, nama, noHp, status, layanan, berat, harga});
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLException : " + e.getMessage());
+        }
+        
+        historyOrderTable.setModel(table);
+        sorter = new TableRowSorter<>(table);
+        historyOrderTable.setRowSorter(sorter);
+        historyOrderTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        autoFitTableColumns(historyOrderTable);
+    }
+
     public static void autoFitTableColumns(javax.swing.JTable table) {
         table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         for (int column = 0; column < table.getColumnCount(); column++) {
@@ -821,7 +859,6 @@ public class OrderCashier extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable allOrderTable;
-    private javax.swing.JTable allOrderTable1;
     private javax.swing.JLabel amountLabel;
     private javax.swing.JTextField amountPriceTextField;
     private rojerusan.RSMaterialButtonRectangle createOrderButton;
@@ -834,6 +871,7 @@ public class OrderCashier extends javax.swing.JFrame {
     private rojerusan.RSMaterialButtonRectangle deleteOrderButton;
     private rojerusan.RSMaterialButtonRectangle editOrderButton;
     private javax.swing.JButton historyButton;
+    private javax.swing.JTable historyOrderTable;
     private javax.swing.JPanel historyPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
